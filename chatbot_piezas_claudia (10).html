@@ -293,11 +293,9 @@ function findMatchingModels(query){
 // Fetch parts for specific models using exact match (fast)
 async function fetchPartsForModels(models){
   if(!models.length) return '';
-  // Build OR filter: modelo=eq.X,modelo=eq.Y
-  var filter=models.map(function(m){
-    return 'modelo=eq.'+encodeURIComponent(m);
-  }).join(',');
-  var url=SUPABASE_URL+'/rest/v1/piezas?or=('+filter+')&limit=500&select=modelo,descripcion,parte,cat&order=modelo';
+  // Use PostgREST IN operator: modelo=in.("val1","val2")
+  var inList=models.map(function(m){ return '"'+m+'"'; }).join(',');
+  var url=SUPABASE_URL+'/rest/v1/piezas?modelo=in.('+encodeURIComponent(inList)+')&limit=500&select=modelo,descripcion,parte,cat&order=modelo';
   var res=await fetch(url,{
     headers:{'apikey':ANON_KEY,'Authorization':'Bearer '+ANON_KEY}
   });
